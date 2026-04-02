@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Book Seat - CineTicket</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f6f9; }
+        .seat { width: 45px; height: 45px; margin: 6px; border-radius: 12px; font-weight: bold; border: none; font-size: 0.9rem; transition: transform 0.2s; }
+        .available { background: linear-gradient(135deg, #11998e, #38ef7d); color: white; cursor: pointer; box-shadow: 0 4px 6px rgba(56,239,125,0.3); }
+        .available:hover { transform: scale(1.1); box-shadow: 0 6px 12px rgba(56,239,125,0.5); }
+        .booked { background: linear-gradient(135deg, #eb3349, #f45c43); color: white; cursor: not-allowed; opacity: 0.5; box-shadow: 0 4px 6px rgba(244,92,67,0.3); }
+        .screen { background: linear-gradient(to bottom, #dce3f0, #f8f9fa); height: 60px; border-radius: 50% 50% 0 0; text-align: center; line-height: 60px; font-weight: bold; letter-spacing: 8px; color: #888; margin-bottom: 40px; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body class="bg-light">
+<nav class="navbar navbar-dark px-4 shadow-sm mb-4" style="background: linear-gradient(90deg, #b92b27, #1565C0);">
+    <a class="navbar-brand fw-bold fs-4" th:href="'/user/movie/' + ${show.movie.id}">← Back Options</a>
+</nav>
+
+<div class="container text-center mb-5 pb-5">
+    <div th:if="${param.error}" class="alert alert-danger shadow-sm rounded-pill fw-bold" th:text="${param.error}"></div>
+
+    <div class="mb-5">
+        <h1 class="display-5 fw-bold text-dark mb-2" th:text="${show.movie.title}">Movie</h1>
+        <p class="text-secondary fs-5"><span th:text="${show.screenName}"></span> <span class="mx-2">•</span> <span th:text="${show.showTime}"></span> <span class="mx-2">•</span> $<span th:text="${show.price}"></span></p>
+    </div>
+
+    <div class="card shadow-lg border-0 p-5 mx-auto rounded-4 bg-white" style="max-width: 650px;">
+        <div class="screen">CINEMA SCREEN</div>
+        
+        <form action="/user/bookTicket" method="post" id="bookingForm">
+            <input type="hidden" name="showId" th:value="${show.id}">
+            <input type="hidden" name="seatNumber" id="selectedSeat">
+            
+            <div class="d-flex flex-column align-items-center mb-5">
+                <script th:inline="javascript">
+                    const bookedSeats = /*[[${bookedSeats}]]*/ [];
+                    const rows = ['A', 'B', 'C', 'D'];
+                    for(let r=0; r<rows.length; r++){
+                        document.write('<div class="d-flex w-100 justify-content-center mb-1">');
+                        // Center aisle logic
+                        for(let i=1; i<=8; i++){
+                            if(i===5) document.write('<div style="width:30px"></div>'); // Aisle
+                            let seatId = rows[r] + i;
+                            let isBooked = bookedSeats.includes(seatId);
+                            let cls = isBooked ? 'seat booked btn' : 'seat available btn';
+                            let onclick = isBooked ? '' : `onclick="selectSeat('${seatId}')"`;
+                            document.write(`<button type="button" class="${cls}" ${onclick}>${seatId}</button>`);
+                        }
+                        document.write('</div>');
+                    }
+
+                    function selectSeat(seat) {
+                        if(confirm('Reserve seat \'' + seat + '\' and confirm purchase?')) {
+                            document.getElementById('selectedSeat').value = seat;
+                            document.getElementById('bookingForm').submit();
+                        }
+                    }
+                </script>
+            </div>
+            
+            <div class="d-flex justify-content-center gap-5 pt-4 border-top">
+                <div class="d-flex align-items-center"><span class="d-inline-block rounded shadow-sm me-2" style="width:25px;height:25px;background: linear-gradient(135deg, #11998e, #38ef7d);"></span> <span class="fw-bold text-secondary">Available</span></div>
+                <div class="d-flex align-items-center"><span class="d-inline-block rounded shadow-sm me-2 opacity-50" style="width:25px;height:25px;background: linear-gradient(135deg, #eb3349, #f45c43);"></span> <span class="fw-bold text-secondary">Booked</span></div>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
